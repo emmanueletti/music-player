@@ -3,6 +3,10 @@ const image = document.querySelector('img');
 const title = document.getElementById('title');
 const artist = document.getElementById('artist');
 const music = document.querySelector('audio');
+const progressContainer = document.getElementById('progress-container');
+const progress = document.getElementById('progress');
+const currentTimeEl = document.getElementById('current-time');
+const durationEl = document.getElementById('duration');
 const playBtn = document.getElementById('play');
 const prevBtn = document.getElementById('prev');
 const nextBtn = document.getElementById('next');
@@ -78,6 +82,8 @@ const goToPrevSong = () => {
   loadSong(songs[newSongIndex]);
   currentSongIndex = newSongIndex;
   music.play();
+  playBtn.classList.replace('fa-play', 'fa-pause');
+  playBtn.setAttribute('title', 'Play');
 };
 
 const goToNextSong = () => {
@@ -85,13 +91,61 @@ const goToNextSong = () => {
   loadSong(songs[newSongIndex]);
   currentSongIndex = newSongIndex;
   music.play();
+  playBtn.classList.replace('fa-play', 'fa-pause');
+  playBtn.setAttribute('title', 'Pause');
 };
+
+const parseToDurationString = (seconds) => {
+  const durationMinutes = Math.floor(seconds / 60);
+  let durationSeconds = Math.floor(seconds % 60);
+  if (durationSeconds < 10) {
+    durationSeconds = `0${durationSeconds}`;
+  }
+  return `${durationMinutes}:${durationSeconds}`;
+};
+
+const updateDurationTimes = (duration, currentTime) => {
+  if (isNaN(duration)) return;
+  const durationMinutes = Math.floor(duration / 60);
+  let durationSeconds = Math.floor(duration % 60);
+  if (durationSeconds < 10) {
+    durationSeconds = `0${durationSeconds}`;
+  }
+  durationEl.textContent = parseToDurationString(duration);
+  currentTimeEl.textContent = parseToDurationString(currentTime);
+};
+
+const updateProgressBar = (duration, currentTime) => {
+  const progressPercent = (currentTime / duration) * 100;
+  progress.style.width = `${progressPercent}%`;
+};
+
+const handleMusicTimeUpdate = (e) => {
+  const { duration, currentTime } = e.srcElement;
+  if (!music.paused) {
+    updateProgressBar(duration, currentTime);
+    updateDurationTimes(duration, currentTime);
+  }
+};
+
+// using function declaration b.c "this" doesnt work for function expression
+function setProgress(e) {
+  const totalWidth = this.clientWidth;
+  const portionOfProgressBarClicked = e.offsetX;
+
+  const { duration } = music;
+  music.currentTime = (portionOfProgressBarClicked / totalWidth) * duration;
+  updateProgressBar(totalWidth, portionOfProgressBarClicked);
+}
 
 // Event Listeners
 window.addEventListener('load', () => {
   loadSong(songs[currentSongIndex]);
 });
-
 playBtn.addEventListener('click', togglePlayMusic);
 prevBtn.addEventListener('click', goToPrevSong);
 nextBtn.addEventListener('click', goToNextSong);
+// timeupdate is a special event on audio elements
+music.addEventListener('timeupdate', handleMusicTimeUpdate);
+progressContainer.addEventListener('click', setProgress);
+music.addEventListener('ended', goToNextSong);
