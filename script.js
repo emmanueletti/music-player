@@ -1,7 +1,7 @@
 // Cache DOM Elements
 const image = document.querySelector('img');
 const title = document.getElementById('title');
-const artist = document.getElementById('artist');
+const artistEl = document.getElementById('artist');
 const music = document.querySelector('audio');
 const progressContainer = document.getElementById('progress-container');
 const progress = document.getElementById('progress');
@@ -72,7 +72,7 @@ const togglePlayMusic = () => {
 
 const loadSong = ({ displayName, artist, name }) => {
   title.textContent = displayName;
-  artist.textContent = artist;
+  artistEl.textContent = artist;
   music.src = `music/${name}.mp3`;
   image.src = `img/${name}.jpg`;
 };
